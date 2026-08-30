@@ -1,13 +1,17 @@
 
 import os
-import pandas as pd
 from sklearn.model_selection import train_test_split
-
+import pandas as pd
+from pathlib import Path
 
 def prepare_data():
     # Define paths
-    DATA_PATH = "/content/tourism_project/data/tourism.csv"
-    OUTPUT_DIR = "/content/tourism_project/data/processed"
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    DATA_PATH = BASE_DIR / "data" / "tourism.csv"
+
+    # Folder for processed data
+    OUTPUT_DIR = BASE_DIR / "data" / "processed"
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # Load dataset
     df = pd.read_csv(DATA_PATH)
@@ -33,10 +37,10 @@ def prepare_data():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     # Save processed datasets
-    X_train.to_csv(f"{OUTPUT_DIR}/X_train.csv", index=False)
-    X_test.to_csv(f"{OUTPUT_DIR}/X_test.csv", index=False)
-    y_train.to_csv(f"{OUTPUT_DIR}/y_train.csv", index=False)
-    y_test.to_csv(f"{OUTPUT_DIR}/y_test.csv", index=False)
+    X_train.to_csv(OUTPUT_DIR / "X_train.csv", index=False)
+    X_test.to_csv(OUTPUT_DIR / "X_test.csv", index=False)
+    y_train.to_csv(OUTPUT_DIR / "y_train.csv", index=False)
+    y_test.to_csv(OUTPUT_DIR / "y_test.csv", index=False)
 
     print("Data preparation completed successfully!")
     print(f"Training data shape: {X_train.shape}")
