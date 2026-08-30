@@ -1,0 +1,109 @@
+
+name: Tourism Package Prediction MLOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+
+  # -----------------------------------------
+  # JOB 1: DATA REGISTRATION
+  # -----------------------------------------
+  data-registration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas scikit-learn joblib
+
+      - name: Validate and register dataset
+        run: python model_building/data_register.py
+
+
+  # -----------------------------------------
+  # JOB 2: DATA PREPARATION
+  # -----------------------------------------
+  data-preparation:
+    needs: data-registration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas scikit-learn joblib
+
+      - name: Prepare data
+        run: python model_building/prep.py
+
+      - name: Upload processed data artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-data
+          path: data/processed/
+
+
+  # -----------------------------------------
+  # JOB 3: MODEL BUILDING AND EXPERIMENTATION
+  # -----------------------------------------
+  model-building:
+    needs: data-preparation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pandas scikit-learn joblib
+
+      - name: Download processed data artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: processed-data
+          path: data/processed/
+
+      - name: Train and tune model
+        run: python model_building/train_model.py
+
+      - name: Commit trained model and experiment results
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add model_building/model/
+
+          git diff --cached --quiet || git commit -m "Update trained tourism prediction model"
+
+          git push
