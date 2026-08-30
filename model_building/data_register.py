@@ -2,7 +2,7 @@
 import pandas as pd
 import os
 
-DATA_PATH = "tourism_project/data/tourism.csv"
+DATA_PATH = "data/tourism.csv"
 
 def register_data():
     if not os.path.exists(DATA_PATH):
@@ -12,6 +12,7 @@ def register_data():
 
     print("Data registered successfully!")
     print(f"Dataset shape: {df.shape}")
+
     print("\nColumns:")
     print(df.columns.tolist())
 
